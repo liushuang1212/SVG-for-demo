@@ -1,0 +1,413 @@
+<!--
+  Copyright (c) 2006-2013, JGraph Ltd
+  
+  Hover icons example for mxGraph. This example demonstrates showing
+  icons on vertices as mouse hovers over them.
+-->
+<html>
+<head>
+	<title>项目拖拉赋值</title>
+	<meta charset="utf-8"/>
+
+	<!-- Sets the basepath for the library if not in same directory -->
+	<script type="text/javascript">
+		mxBasePath = '../src';
+	</script>
+
+	<!-- Loads and initializes the library -->
+	<script type="text/javascript" src="../src/js/mxClient.js"></script>
+	<!-- 代码起始 -->
+	<script type="text/javascript">
+	function main(container,tbcontainer){
+		//检查浏览器是否适用！
+		if(!mxClient.isBrowserSupported()){
+			mxUtils.error("当前浏览器并不适合，请选择别的浏览器！",200,false);
+		}else{
+			//兼容考虑
+			if (mxClient.IS_QUIRKS)
+			{
+				document.body.style.overflow = 'hidden';
+				new mxDivResizer(tbContainer);
+				new mxDivResizer(container);
+			}
+
+			mxEvent.disableContextMenu(container);//在指定容器中禁止右键菜单功能
+
+			//设置连接图标
+			mxConnectionHandler.prototype.connectImage = new mxImage('images/connector.gif', 16, 16);
+
+			var toolbar = new mxToolbar(tbcontainer);
+			toolbar.enabled = false;
+
+			var model = new mxGraphModel();
+			var graph = new mxGraph(container,model);
+
+			//各种开关
+			graph.setConnectable(true);//开启连接
+			graph.setCellsResizable(true);//变化cell大小，默认是true
+			graph.setResizeContainer(false);//变化cell大小，容器大小也会随之改变
+
+			//生成移动镜
+			var outline = document.getElementById('outlineContainer');
+			var outln = new mxOutline(graph, outline);
+
+			var keyHandler = new mxKeyHandler(graph);
+			var rubberband = new mxRubberband(graph);
+
+			var doc = mxUtils.createXmlDocument();
+
+			var li=document.body.getElementsByTagName('li');
+
+			var iconTolerance=20;
+
+			/*
+			*绑定鼠标事件：addMouseListener
+			*/
+			graph.addMouseListener(//对graph绑定鼠标事件
+			{
+			    currentState: null,//...？
+			    currentIconSet: null,//...？
+			    /*
+			    *mousedown：按下鼠标
+			    *mouseup:鼠标弹起
+			    *mousemove：鼠标移动
+			    */
+			    mouseDown: function(sender, me)
+			    {
+			    	/*
+			    	*sender:mxGraph
+			    	*me:mxMouseEvent
+			    	*/
+			    	// Hides icons on mouse down鼠标按下的时候隐藏图标
+		        	if (this.currentState != null)//当前状态不等于null的时候，表示....？
+		        	{
+		          		this.dragLeave(me.getEvent(), this.currentState);//解冻，即松开鼠标...？
+		          		this.currentState = null;
+		        	}
+			    },
+			    mouseMove: function(sender, me)
+			    {
+			    	if (this.currentState != null && (me.getState() == this.currentState || me.getState() == null))//只是在图形上面游走
+			    	{
+			    		var tol = iconTolerance;
+
+			    		var tmp = new mxRectangle(me.getGraphX()-tol, me.getGraphY()-tol, 2*tol, 2*tol);
+
+			    		if (mxUtils.intersects(tmp, this.currentState))//tmp与currentState若有交集
+			    		{
+			    			return;
+			    		}
+			    	}
+			    	
+					var tmp = graph.view.getState(me.getCell());//mxCellState
+
+			    	// Ignores everything but vertices
+					if (graph.isMouseDown || (tmp != null && !graph.getModel().isVertex(tmp.cell)))//拉着图形移动
+					{
+						tmp = null;
+					}
+
+			      	if (tmp != this.currentState)
+			      	{
+			        	if (this.currentState != null)//鼠标从图形上空离开的时候
+			        	{
+			          		this.dragLeave(me.getEvent(), this.currentState);
+			        	}
+			        
+		        		this.currentState = tmp;
+			        
+			        	if (this.currentState != null)//鼠标进入图形上空
+			        	{
+			          		this.dragEnter(me.getEvent(), this.currentState);
+			        	}
+			      	}
+			    },
+			    mouseUp: function(sender, me) { },
+			    dragEnter: function(evt, state)//在拖动操作中封锁更新并在确定位置显示拖动图像
+			    {
+			    	if (this.currentIconSet == null)
+			    	{
+		    			this.currentIconSet = new mxIconSet(state);
+			    	}
+			    },
+			    dragLeave: function(evt, state)//解冻窗口并隐藏拖动图像
+			    {
+			    	if (this.currentIconSet != null)
+			    	{
+		    			this.currentIconSet.destroy();
+		    			this.currentIconSet = null;
+			    	}
+			    }
+			});
+
+			//addVertex
+			var addVertex = function(icon,w,h,style,li,tack)
+			{
+				var vertex = new mxCell(tack,new mxGeometry(0,0,w,h),style);
+				vertex.setVertex(true);//  .....?
+
+				addToolbarItem(graph,toolbar,vertex,icon,li);
+			};
+
+			var tack = new Array();
+
+			for(var i = 0;i < li.length;i++){
+				var person1=li[i].getAttribute('person1');
+				var person2=li[i].getAttribute('person2');
+				var person3=li[i].getAttribute('person3');
+
+				tack[i] = doc.createElement('Tack');
+				tack[i].setAttribute('组长A', person1);
+				tack[i].setAttribute('组长B', person2);
+				tack[i].setAttribute('组长C', person3);
+
+				addVertex('editors/images/rectangle.gif',100,40,'',li[i],tack[i]);
+			}
+
+			//对应的cell需要在页面上呈现什么内容？
+			graph.convertValueToString = function(cell)
+			{
+				if(graph.model.isVertex(cell)){
+					//vertex上面显示什么
+					var person1 = cell.getAttribute('组长A', '');
+					var person2 = cell.getAttribute('组长B', '');
+					var person3 = cell.getAttribute('组长C', '');
+								
+					return person1 + ', ' + person2+','+person3;
+				}else{
+					//edge上面显示什么
+					return "完成后";
+				}
+			};
+
+			//添加额外按钮，生成graph的xml
+			document.body.appendChild(mxUtils.button('View XML',function()
+			{
+				var encoder = new mxCodec();
+				var node = encoder.encode(graph.getModel());
+				mxUtils.popup(mxUtils.getPrettyXml(node),true);
+			}));
+
+			//事件绑定   绑定一个改变事件....触发时机？
+			graph.getSelectionModel().addListener(mxEvent.CHANGE, function(sender,evt)
+			{
+				var div = document.getElementById('properties');
+				div.innerHTML="";
+				var cell = graph.getSelectionCell();
+				if (cell == null)
+				{
+					mxUtils.writeln(div, 'Nothing selected.');
+				}else if(graph.model.isVertex(cell)){					
+					selectionChanged(graph,div);
+				}else{
+					mxUtils.writeln(div,"edge");
+				}
+			});
+		}
+	}
+
+	/*
+	*定义函数selectionChanged
+	*/
+	function selectionChanged(graph,div){
+		var center = document.createElement('center');
+		
+		mxUtils.writeln(center, cell.value.nodeName + ' (' + cell.id + ')');
+		
+		div.appendChild(center);
+		
+		mxUtils.br(div);
+
+		var form = new mxForm();
+
+		var attrs = cell.value.attributes;
+			
+		for (var i = 0; i < attrs.length; i++)
+		{
+			createTextField(graph, form, cell, attrs[i]);
+		}
+
+		div.appendChild(form.getTable());
+		mxUtils.br(div);
+	}
+	/*
+	*定义函数createTextField   生成字段
+	*/
+	function createTextField(graph, form, cell, attribute)
+	{
+		var input = form.addText(attribute.nodeName + ':', attribute.nodeValue);
+
+		var applyHandler = function()
+		{
+			var newValue = input.value || '';
+			var oldValue = cell.getAttribute(attribute.nodeName, '');
+
+			if (newValue != oldValue)
+			{
+				graph.getModel().beginUpdate();
+                
+                try
+                {
+                	var edit = new mxCellAttributeChange(cell, attribute.nodeName,newValue);
+                   	graph.getModel().execute(edit);
+                   	graph.updateCellSize(cell);//重新输入后，cell大小更新。.........？如何确定大小更新后的vertex大小？
+                }
+                finally
+                {
+                    graph.getModel().endUpdate();
+                }
+			}
+		}; 
+		//事件绑定，在input上面绑定！
+		mxEvent.addListener(input, 'keypress', function (evt)
+		{
+			// Needs to take shift into account for textareas
+			if (evt.keyCode == /*enter*/13 &&
+				!mxEvent.isShiftDown(evt))
+			{
+				input.blur();
+			}
+		});
+
+		if (mxClient.IS_IE)//考虑浏览器的兼容性，特别注意IE浏览器
+		{
+			mxEvent.addListener(input, 'focusout', applyHandler);
+		}
+		else
+		{
+			mxEvent.addListener(input, 'blur', applyHandler);
+		}
+	}
+	/*
+	*定义函数addToolbarItem
+	*/
+	function addToolbarItem(graph,toolbar,prototype,image,li){
+		var funct = function(graph, evt, cell, x, y)
+		{
+			graph.stopEditing(false);
+
+			var vertex = graph.getModel().cloneCell(prototype);
+
+			vertex.geometry.x = x;
+			vertex.geometry.y = y;
+
+			graph.addCell(vertex);//往graph中添加vertex
+			//graph.setSelectionCell(vertex);//添加成功的瞬间，也选中该vertex
+		}
+
+		//问：若是不同类型的预览，又改如何做到分类呢？
+
+		var dragImage = document.createElement('img');//预览图标！
+		dragImage.setAttribute('src', 'editors/images/rectangle.gif');
+		dragImage.style.position = 'absolute';
+		dragImage.style.left = '0px';
+		dragImage.style.top = '0px';
+		dragImage.style.width = '32px';
+		dragImage.style.height = '32px';
+			
+
+		mxUtils.makeDraggable(li,graph,funct,dragImage);//拖拉源生成的主要函数
+	}
+
+	//此处的state指代的是vertex的位置
+	//复制删除图标
+	function mxIconSet(state)//触发鼠标事件的cell的mxCellState
+	{
+		this.images = [];
+		var graph = state.view.graph;
+		
+		// Icon1  复制图标在给定图形中的定位
+		var img = mxUtils.createImage('images/copy.png');//创建图形
+		img.setAttribute('title', 'Duplicate');
+		img.style.position = 'absolute';
+		img.style.cursor = 'pointer';
+		img.style.width = '16px';
+		img.style.height = '16px';
+		img.style.left = (state.x + state.width-13) + 'px';
+		img.style.top = (state.y + state.height) + 'px';
+		
+		//给复制图片绑定一个点击事件？
+		mxEvent.addGestureListeners(img,
+			mxUtils.bind(this, function(evt)
+			{
+				var s = graph.gridSize;
+				graph.setSelectionCells(graph.moveCells([state.cell], s, s, true));
+				mxEvent.consume(evt);
+				this.destroy();
+			})
+		);
+		
+		state.view.graph.container.appendChild(img);
+		this.images.push(img);
+		
+		// Delete
+		var img = mxUtils.createImage('images/delete2.png');
+		img.setAttribute('title', 'Delete');
+		img.style.position = 'absolute';
+		img.style.cursor = 'pointer';
+		img.style.width = '16px';
+		img.style.height = '16px';
+		img.style.left = (state.x + state.width - 30) + 'px';
+		img.style.top = (state.y + state.height) + 'px';
+		
+		mxEvent.addGestureListeners(img,
+			mxUtils.bind(this, function(evt)
+			{
+				// Disables dragging the image
+				mxEvent.consume(evt);
+			})
+		);
+		
+		mxEvent.addListener(img, 'click',
+			mxUtils.bind(this, function(evt)
+			{
+				graph.removeCells([state.cell]);
+				mxEvent.consume(evt);
+				this.destroy();
+			})
+		);
+		
+		state.view.graph.container.appendChild(img);
+		this.images.push(img);
+	};
+	mxIconSet.prototype.destroy = function()
+	{
+		if (this.images != null)
+		{
+			for (var i = 0; i < this.images.length; i++)
+			{
+				var img = this.images[i];
+				img.parentNode.removeChild(img);
+			}
+		}
+		
+		this.images = null;
+	};
+	</script>
+</head>
+
+<!-- Page passes the container for the graph to the program -->
+<body onload="main(document.getElementById('graphContainer'),document.getElementById('toolbarContainer'))">
+	<!--此处构建一个容器，用于装工具栏-->
+	<div id="toolbarContainer"
+		style="overflow: hidden;width:100px;height:800px;float:left;border:1px solid black;margin-right:5px; ">
+		<ul>
+			<li person1="张三" person2="李四" person3="赵五">任务1</li>
+			<li person1="张六" person2="李七" person3="赵八">任务2</li>
+		</ul>
+	</div>
+	<!--创建一个图形容器-->
+	<div id="graphContainer"
+		style="verflow:hidden;width:800px;height:800px;float:left;border:1px solid black;cursor:default;">
+	</div>
+	<!--属性面板-->
+	<div id="properties"
+		style="border:solid 1px black;padding:10px;float:left;">
+		请选择
+	</div>
+	<!--移动镜容器-->
+	<div id="outlineContainer"
+		style="z-index:1;position:absolute;overflow:hidden;top:0px;right:0px;width:160px;height:120px;background:transparent;border-style:solid;border-color:lightgray;">
+	</div>
+</body>
+</html>

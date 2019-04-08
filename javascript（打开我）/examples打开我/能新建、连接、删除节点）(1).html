@@ -1,0 +1,598 @@
+<!--
+  Copyright (c) 2006-2013, JGraph Ltd
+  
+  Hover icons example for mxGraph. This example demonstrates showing
+  icons on vertices as mouse hovers over them.
+-->
+<html>
+<head>
+	<title>Hover icons example for mxGraph</title>
+
+	<!-- Sets the basepath for the library if not in same directory -->
+	<script type="text/javascript">
+		mxBasePath = '../src';
+	</script>
+
+	<!-- Loads and initializes the library -->
+	<script type="text/javascript" src="../src/js/mxClient.js"></script>
+
+	<!-- Example code -->
+	<script type="text/javascript">
+		// Defines an icon for creating new connections in the connection handler.
+		// This will automatically disable the highlighting of the source vertex.
+		
+		// Defines a new class for all icons
+		function mxIconSet(state)
+		{
+			this.images = [];
+			var graph = state.view.graph;
+			
+			// Icon1
+			var img = mxUtils.createImage('images/copy.png');
+			img.setAttribute('title', 'Duplicate');
+			img.style.position = 'absolute';
+			img.style.cursor = 'pointer';
+			img.style.width = '16px';
+			img.style.height = '16px';
+			img.style.left = (state.x + state.width) + 'px';
+			img.style.top = (state.y + state.height) + 'px';
+			
+			mxEvent.addGestureListeners(img,
+				mxUtils.bind(this, function(evt)
+				{
+					var s = graph.gridSize;
+					graph.setSelectionCells(graph.moveCells([state.cell], s, s, true));
+					mxEvent.consume(evt);
+					this.destroy();
+				})
+			);
+			
+			state.view.graph.container.appendChild(img);
+			this.images.push(img);
+			
+			// Delete
+			var img = mxUtils.createImage('images/delete2.png');
+			img.setAttribute('title', 'Delete');
+			img.style.position = 'absolute';
+			img.style.cursor = 'pointer';
+			img.style.width = '16px';
+			img.style.height = '16px';
+			img.style.left = (state.x + state.width) + 'px';
+			img.style.top = (state.y - 16) + 'px';
+			
+			mxEvent.addGestureListeners(img,
+				mxUtils.bind(this, function(evt)
+				{
+					// Disables dragging the image
+					mxEvent.consume(evt);
+				})
+			);
+			
+			mxEvent.addListener(img, 'click',
+				mxUtils.bind(this, function(evt)
+				{
+					graph.removeCells([state.cell]);
+					mxEvent.consume(evt);
+					this.destroy();
+				})
+			);
+			
+			state.view.graph.container.appendChild(img);
+			this.images.push(img);
+		};
+
+		mxIconSet.prototype.destroy = function()
+		{
+			if (this.images != null)
+			{
+				for (var i = 0; i < this.images.length; i++)
+				{
+					var img = this.images[i];
+					img.parentNode.removeChild(img);
+				}
+			}
+			
+			this.images = null;
+		};
+
+		function addToolbarItem(graph, toolbar, prototype, image)
+		{
+			// Function that is executed when the image is dropped on the graph. The cell argument points to the cell under the mousepointer if there is one.
+			//var img = addToolbarItem(graph, toolbar, vertex, icon);
+			var funct = function(graph, evt, cell, x, y)
+			{
+				graph.stopEditing(false);
+
+				var vertex = graph.getModel().cloneCell(prototype);
+				vertex.geometry.x = x;
+				vertex.geometry.y = y;
+					
+				graph.addCell(vertex);//往图中添加cell
+				graph.setSelectionCell(vertex);//设置选择的单元格
+			}
+			
+			// Creates the image which is used as the drag icon (preview)创建一个用作拖动图表（预览）的图像
+			//向工具栏
+			var img = toolbar.addMode(null, image, function(evt, cell)
+			{
+				var pt = this.graph.getPointForEvent(evt);
+				funct(graph, evt, cell, pt.x, pt.y);
+			});
+			
+			// Disables dragging if element is disabled. This is a workaround
+			// for wrong event order in IE. Following is a dummy listener that
+			// is invoked as the last listener in IE.
+			mxEvent.addListener(img, 'mousedown', function(evt)
+			{
+				if (img.enabled == false)
+				{
+					mxEvent.consume(evt);
+				}
+			});
+			
+			// This listener is always called first before any other listener
+			// in all browsers.
+			mxEvent.addListener(img, 'mousedown', function(evt)
+			{
+				if (img.enabled == false)
+				{
+					mxEvent.consume(evt);
+				}
+			});
+						
+			mxUtils.makeDraggable(img, graph, funct);
+			
+			return img;
+		}
+
+		// Program starts here. Creates a sample graph in the
+		// DOM node with the specified ID. This function is invoked
+		// from the onLoad event handler of the document (see below).
+		function main()
+		{
+			// Checks if the browser is supported
+			if (!mxClient.isBrowserSupported())
+			{
+				// Displays an error message if the browser is not supported.
+				mxUtils.error('Browser is not supported!', 200, false);
+			}
+			else
+			{
+			
+				var doc = mxUtils.createXmlDocument();
+
+				var person1 = doc.createElement('Person');
+				person1.setAttribute('firstName', 'Daffy');
+				person1.setAttribute('lastName', 'Duck');
+				person1.setAttribute('middleName', 'Mary');
+
+				var person2 = doc.createElement('Person');
+				person2.setAttribute('firstName', 'Bugs');
+				person2.setAttribute('lastName', 'Bunny');
+				
+				var relation = doc.createElement('Knows');
+				relation.setAttribute('since', '1985');
+				// Defines an icon for creating new connections in the connection handler.
+				//Á¬½Ó´¦Àí³ÌÐòÖÐ¶¨Òå´´½¨ÐÂÁ¬½ÓµÄÍ¼±ê¡£
+				// This will automatically disable the highlighting of the source vertex.
+				//Õâ½«ÎªÔ´¶¥µã×Ô¶¯½ûÓÃÍ»³öÏÔÊ¾
+				mxConnectionHandler.prototype.connectImage = new mxImage('images/connector.gif', 16, 16);
+				// Creates the div for the toolbar这是左边的拖动选项栏
+				var tbContainer = document.createElement('div');
+				tbContainer.style.position = 'absolute';
+				tbContainer.style.overflow = 'hidden';
+				tbContainer.style.padding = '2px';
+				tbContainer.style.left = '0px';
+				tbContainer.style.top = '0px';
+				tbContainer.style.width = '24px';
+				tbContainer.style.bottom = '0px';
+
+				document.body.appendChild(tbContainer);
+	// Creates new toolbar without event processing
+				var toolbar = new mxToolbar(tbContainer);
+				toolbar.enabled = false;
+				
+				
+				// Creates the div for the graph这是右边的画图区域
+				var container = document.createElement('div');
+				container.style.position = 'absolute';
+				container.style.overflow = 'hidden';
+				container.style.left = '24px';
+				container.style.top = '0px';
+				container.style.right = '0px';
+				container.style.bottom = '0px';
+
+				document.body.appendChild(container);
+
+				if (mxClient.IS_QUIRKS)
+				{
+					document.body.style.overflow = 'hidden';
+					new mxDivResizer(tbContainer);
+					new mxDivResizer(container);
+				}
+				var model = new mxGraphModel();
+				var graph = new mxGraph(container,model);
+				graph.setConnectable(true);
+				graph.setCellsResizable(true);
+				graph.setResizeContainer(true);
+				graph.minimumContainerSize = new mxRectangle(0, 0, 3000, 3800);
+
+				//var graph1 = new mxGraph(container, model);
+				//var graph1 = new mxGraph(container);
+				
+				//graph1.setConnectable(true);
+				//graph1.setMultigraph(false);
+				var keyHandler = new mxKeyHandler(graph);
+				var rubberband = new mxRubberband(graph);
+
+				// Overrides method to disallow edge label editing重写用来禁用边标签编辑功能
+				graph.isCellEditable = function(cell)
+				{
+					return !this.getModel().isEdge(cell);
+					if (mxUtils.isNode(cell.value))
+					{
+						if (cell.value.nodeName.toLowerCase() == 'person')
+						{
+							var firstName = cell.getAttribute('firstName', '');
+							var lastName = cell.getAttribute('lastName', '');
+
+							if (lastName != null && lastName.length > 0)
+							{
+								return lastName + ', ' + firstName;
+							}
+
+							return firstName;
+						}
+						else if (cell.value.nodeName.toLowerCase() == 'knows')
+						{
+							return cell.value.nodeName + ' (Since '
+									+  cell.getAttribute('since', '') + ')';
+						}
+
+					}
+
+					return '';
+				};
+
+				var cellLabelChanged = graph.cellLabelChanged;
+				graph.cellLabelChanged = function(cell, newValue, autoSize)
+				{
+					if (mxUtils.isNode(cell.value) &&
+						cell.value.nodeName.toLowerCase() == 'person')
+					{
+						var pos = newValue.indexOf(' ');
+
+						var firstName = (pos > 0) ? newValue.substring(0,
+								pos) : newValue;
+						var lastName = (pos > 0) ? newValue.substring(
+								pos + 1, newValue.length) : '';
+
+						// Clones the value for correct undo/redo克隆数值以撤销/重做
+						var elt = cell.value.cloneNode(true);
+
+						elt.setAttribute('firstName', firstName);
+						elt.setAttribute('lastName', lastName);
+
+						newValue = elt;
+						autoSize = true;
+					}
+					
+					cellLabelChanged.apply(this, arguments);
+				};
+
+				var getEditingValue = graph.getEditingValue;
+				graph.getEditingValue = function(cell)
+				{
+					if (mxUtils.isNode(cell.value) &&
+						cell.value.nodeName.toLowerCase() == 'person')
+					{
+						var firstName = cell.getAttribute('firstName', '');
+						var lastName = cell.getAttribute('lastName', '');
+
+						return firstName + ' ' + lastName;
+					}
+				};
+				graph.setTooltips(true);
+				
+				var getTooltipForCell = graph.getTooltipForCell;
+				graph.getTooltipForCell = function(cell)
+				{
+					// Adds some relation details for edges为边缘添加一些关系细节
+					if (graph.getModel().isEdge(cell))
+					{
+						var src = this.getLabel(this.getModel().getTerminal(cell, true));
+						var trg = this.getLabel(this.getModel().getTerminal(cell, false));
+
+						/*return src + ' ' + cell.value.nodeName + ' ' +  trg;*/
+					}
+
+					return getTooltipForCell.apply(this, arguments);
+				};
+				new mxRubberband(graph);
+
+
+				// Changes the style for match the markup
+				// Creates the default style for vertices更改样式以匹配标记，为顶点创建默认样式
+				//创建节点的样式
+				var style = graph.getStylesheet().getDefaultVertexStyle();
+				style[mxConstants.STYLE_STROKECOLOR] = 'gray';
+				style[mxConstants.STYLE_ROUNDED] = true;
+				style[mxConstants.STYLE_SHADOW] = true;
+				style[mxConstants.STYLE_FILLCOLOR] = '#DFDFDF';
+				style[mxConstants.STYLE_GRADIENTCOLOR] = 'white';
+				style[mxConstants.STYLE_FONTCOLOR] = 'black';
+				style[mxConstants.STYLE_FONTSIZE] = '12';
+				style[mxConstants.STYLE_SPACING] = 4;
+		
+				// Creates the default style for edges为边创建默认的样式
+				style = graph.getStylesheet().getDefaultEdgeStyle();
+				style[mxConstants.STYLE_STROKECOLOR] = '#0C0C0C';
+				style[mxConstants.STYLE_LABEL_BACKGROUNDCOLOR] = 'white';
+				style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector;
+				style[mxConstants.STYLE_ROUNDED] = true;
+				style[mxConstants.STYLE_FONTCOLOR] = 'black';
+				style[mxConstants.STYLE_FONTSIZE] = '10';
+				
+				// Gets the default parent for inserting new cells. This
+				// is normally the first child of the root (ie. layer 0).
+				//获取新插入单元格的默认父级。这通常是根的第一个子节点（即第0层）。
+				/*开始有问题开始有问题*/
+				var parent = graph.getDefaultParent();
+
+
+				graph.getModel().beginUpdate();
+				try
+				{
+					var v1 = graph.insertVertex(parent, null, person1, 40, 40, 80, 30);
+					var v2 = graph.insertVertex(parent, null, person2, 200, 150, 80, 30);
+					var e1 = graph.insertEdge(parent, null, relation, v1, v2);
+				}
+				finally
+				{
+					// Updates the display显示
+					graph.getModel().endUpdate();
+				}
+				graph.getSelectionModel().addListener(mxEvent.CHANGE, function(sender, evt)
+				{
+					selectionChanged(graph);
+				});
+
+				selectionChanged(graph);
+			}
+
+
+			function selectionChanged(graph)
+			{
+				var div = document.getElementById('properties');
+
+				// Forces focusout in IE在IE里散焦
+				graph.container.focus();
+
+				// Clears the DIV the non-DOM way清除DIV样式中的非dom方式
+				div.innerHTML = '';
+
+				// Gets the selection cell得到选择的单元格
+				var cell = graph.getSelectionCell();
+
+				if (cell == null)
+				{
+					mxUtils.writeln(div, 'Nothing selected.');
+				}
+				else
+				{
+					// Writes the title写标题
+					var center = document.createElement('center');
+					//显示具体内容
+					mxUtils.writeln(center, cell.value.nodeName + ' (' + cell.id + ')');
+					div.appendChild(center);
+					mxUtils.br(div);
+
+					// Creates the form from the attributes of the user object在用户对象的属性栏里创建窗体
+					var form = new mxForm();
+	
+					var attrs = cell.value.attributes;
+					
+					for (var i = 0; i < attrs.length; i++)
+					{
+						createTextField(graph, form, cell, attrs[i]);
+					}
+					div.appendChild(form.getTable());
+					mxUtils.br(div);
+				}
+			}
+
+
+			function createTextField(graph, form, cell, attribute)
+			{
+				var input = form.addText(attribute.nodeName + ':', attribute.nodeValue);
+
+				var applyHandler = function()
+				{
+					var newValue = input.value || '';
+					var oldValue = cell.getAttribute(attribute.nodeName, '');
+
+					if (newValue != oldValue)
+					{
+						graph.getModel().beginUpdate();
+                        
+                        try
+                        {
+                        	var edit = new mxCellAttributeChange(
+ 		                           cell, attribute.nodeName,
+ 		                           newValue);
+                           	graph.getModel().execute(edit);
+                           	graph.updateCellSize(cell);
+                        }
+                        finally
+                        {
+                            graph.getModel().endUpdate();
+                        }
+					}
+				}; 
+
+				mxEvent.addListener(input, 'keypress', function (evt)
+				{
+					// Needs to take shift into account for textareas需要移到文本区域
+					if (evt.keyCode == /*enter*/13 &&
+						!mxEvent.isShiftDown(evt))
+					{
+						input.blur();
+					}
+				});
+
+				if (mxClient.IS_IE)
+				{
+					mxEvent.addListener(input, 'focusout', applyHandler);
+				}
+				else
+				{
+					// Note: Known problem is the blurring of fields in
+					// Firefox by changing the selection, in which case
+					// no event is fired in FF and the change is lost.
+					// As a workaround you should use a local variable
+					// that stores the focused field and invoke blur
+					// explicitely where we do the graph.focus above.
+					//注意：现在Firefox浏览器中一些字段会在选择的时候被模糊，没有事件被触发，更改的数据丢失。为了修复问题，你应该使用一个能存储聚焦区域的局部变量
+					mxEvent.addListener(input, 'blur', applyHandler);
+				}
+			}
+
+				var addVertex = function(icon, w, h, style)
+				{
+					var vertex = new mxCell(null, new mxGeometry(0, 0, w, h), style);
+					vertex.setVertex(true);
+				
+					var img = addToolbarItem(graph, toolbar, vertex, icon);
+					img.enabled = true;
+					
+					graph.getSelectionModel().addListener(mxEvent.CHANGE, function()
+					{
+						var tmp = graph.isSelectionEmpty();
+						mxUtils.setOpacity(img, (tmp) ? 100 : 20);
+						img.enabled = tmp;
+					});
+				};
+				addVertex('editors/images/rectangle.gif', 100, 40, '');
+				// Defines the tolerance before removing the icons
+				var iconTolerance = 20;
+
+				// Shows icons if the mouse is over a cell
+				graph.addMouseListener(
+				{
+				    currentState: null,
+				    currentIconSet: null,
+				    mouseDown: function(sender, me)
+				    {
+				    	// Hides icons on mouse down
+			        	if (this.currentState != null)
+			        	{
+			          		this.dragLeave(me.getEvent(), this.currentState);
+			          		this.currentState = null;
+			        	}
+				    },
+				    mouseMove: function(sender, me)
+				    {
+				    	if (this.currentState != null && (me.getState() == this.currentState ||
+				    		me.getState() == null))
+				    	{
+				    		var tol = iconTolerance;
+				    		var tmp = new mxRectangle(me.getGraphX() - tol,
+				    			me.getGraphY() - tol, 2 * tol, 2 * tol);
+
+				    		if (mxUtils.intersects(tmp, this.currentState))
+				    		{
+				    			return;
+				    		}
+				    	}
+				    	
+						var tmp = graph.view.getState(me.getCell());
+				    	
+				    	// Ignores everything but vertices
+						if (graph.isMouseDown || (tmp != null && !graph.getModel().isVertex(tmp.cell)))
+						{
+							tmp = null;
+						}
+
+				      	if (tmp != this.currentState)
+				      	{
+				        	if (this.currentState != null)
+				        	{
+				          		this.dragLeave(me.getEvent(), this.currentState);
+				        	}
+				        
+			        		this.currentState = tmp;
+				        
+				        	if (this.currentState != null)
+				        	{
+				          		this.dragEnter(me.getEvent(), this.currentState);
+				        	}
+				      	}
+				    },
+				    mouseUp: function(sender, me) { },
+				    dragEnter: function(evt, state)
+				    {
+				    	if (this.currentIconSet == null)
+				    	{
+			    			this.currentIconSet = new mxIconSet(state);
+				    	}
+				    },
+				    dragLeave: function(evt, state)
+				    {
+				    	if (this.currentIconSet != null)
+				    	{
+			    			this.currentIconSet.destroy();
+			    			this.currentIconSet = null;
+				    	}
+				    }
+				});
+				 
+				// Enables rubberband selection
+				new mxRubberband(graph);
+				
+				// Gets the default parent for inserting new cells. This
+				// is normally the first child of the root (ie. layer 0).
+				var parent = graph.getDefaultParent();
+								
+				// Adds cells to the model in a single step
+				/*graph.getModel().beginUpdate();
+				try
+				{
+					var v1 = graph.insertVertex(parent, null, 'Hello,', 20, 20, 80, 30);
+					var v2 = graph.insertVertex(parent, null, 'World!', 200, 150, 80, 30);
+					var e1 = graph.insertEdge(parent, null, '', v1, v2);
+				}
+				finally
+				{
+					// Updates the display
+					graph.getModel().endUpdate();
+				}*/
+			}
+	</script>
+</head>
+
+<!-- Page passes the container for the graph to the program -->
+<!--
+<body onload="main(document.getElementById('graphContainer'))">
+-->
+<body onload="main();">
+	<!-- Creates a container for the graph with a grid wallpaper -->
+	<!--原来的 <div id="graphContainer"
+		style="overflow:hidden;width:3210px;height:2410px;cursor:default;">
+	</div>-->
+
+	<table style="position:relative;">
+	<tr>
+		<td>
+		<!--画图的线框区域-->
+			<div id="graphContainer"
+				style="border: solid 1px black;overflow:hidden;width:800px;height:600px;margin-left:20px;cursor:default;">
+			</div>
+		</td>
+		<td valign="top">
+			<div id="properties"
+				style="border: solid 1px black; padding: 10px;">
+			</div>
+		</td>
+	</tr>
+</body>
+</html>
