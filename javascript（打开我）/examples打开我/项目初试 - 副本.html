@@ -10,6 +10,7 @@
 	<meta charset="utf-8"/>
 	<link rel="stylesheet" href="../../layui/css/layui.css">
 
+
 	<!-- Sets the basepath for the library if not in same directory -->
 	<script type="text/javascript">
 		mxBasePath = '../src';
@@ -18,6 +19,10 @@
 	<!-- Loads and initializes the library -->
 	<script type="text/javascript" src="../src/js/mxClient.js"></script>
 	<script type="text/javascript" src="../../layui/layui.js"></script>
+
+	<!-- 开发环境版本，包含了有帮助的命令行警告 -->
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
 	<!-- 代码起始 -->
 	<script type="text/javascript">
 	function main(container,tbcontainer){
@@ -37,6 +42,7 @@
 			mxEvent.disableContextMenu(container);
 			//设置连接图标
 			mxConnectionHandler.prototype.connectImage = new mxImage('images/connector.gif', 16, 16);
+			mxConnectionHandler.prototype.connectImage = new mxImage('images/connector1.png',20, 16);
 
 			//工具栏的设置
 			var toolbar = new mxToolbar(tbcontainer);
@@ -62,6 +68,7 @@
 			var rubberband = new mxRubberband(graph);
 
 			//edge样式的修改
+			
 
 			//vertex样式的修改
 
@@ -69,6 +76,7 @@
 			var doc = mxUtils.createXmlDocument();
 
 			//获取工具栏内的节点，作为拖拉源
+			//改成获取a标签
 			var li=document.body.getElementsByTagName('li');
 
 			var iconTolerance=20;
@@ -165,14 +173,28 @@
 			var tack = new Array();
 
 			for(var i = 0;i < li.length;i++){
-				var person1=li[i].getAttribute('person1');
-				var person2=li[i].getAttribute('person2');
-				var person3=li[i].getAttribute('person3');
-
+				var person1=li[i].getAttribute('id');
+				var person2=li[i].getAttribute('check');
+				var person3=li[i].getAttribute('head');
+				var person4=li[i].getAttribute('record');
+				var person5=li[i].getAttribute('content');
+				var person6=li[i].getAttribute('breakable');
+				var person7=li[i].getAttribute('fastjump');
+				var person8=li[i].getAttribute('ansDelay');
+				var person9=li[i].getAttribute('waitTime');
+				var person10=li[i].getAttribute('fuc');
+	
 				tack[i] = doc.createElement('Tack');
-				tack[i].setAttribute('组长A', person1);
-				tack[i].setAttribute('组长B', person2);
-				tack[i].setAttribute('组长C', person3);
+				tack[i].setAttribute('编号', person1);
+				tack[i].setAttribute('类别', person2);
+				tack[i].setAttribute('流程概括', person3);
+				tack[i].setAttribute('录音编号', person3);
+				tack[i].setAttribute('录音文字', person3);
+				tack[i].setAttribute('可否被打断', person3);
+				tack[i].setAttribute('是否立即跳转', person3);
+				tack[i].setAttribute('回答延时', person3);
+				tack[i].setAttribute('等待时长', person3);
+				tack[i].setAttribute('功能', person3);
 
 				addVertex('editors/images/rectangle.gif',100,40,'',li[i],tack[i]);
 			}
@@ -182,11 +204,20 @@
 			{
 				if(graph.model.isVertex(cell)){
 					//vertex上面显示什么
-					var person1 = cell.getAttribute('组长A', '');
-					var person2 = cell.getAttribute('组长B', '');
-					var person3 = cell.getAttribute('组长C', '');
+					var person1 = cell.getAttribute('编号', '');
+					var person2 = cell.getAttribute('类别', '');
+					var person3 = cell.getAttribute('流程概括', '');
+					var person4 = cell.getAttribute('录音编号', '');
+					var person5 = cell.getAttribute('录音文字', '');
+					var person6 = cell.getAttribute('可否被打断', '');
+					var person7 = cell.getAttribute('是否立即跳转', '');
+					var person8 = cell.getAttribute('回答延时', '');
+					var person9 = cell.getAttribute('等待时长', '');
+					var person10 = cell.getAttribute('功能', '');
 								
-					return person1 + ', ' + person2+','+person3;
+					// return person1 + ', ' + person2+','+person3+', '+person4+', '+person5+', '+person6+', '+person7+', '+person8+', '+person9+', '+person10;
+					return person3; // 流程上显示的内容
+					
 				}else{
 					//edge上面显示什么
 					return "完成后";
@@ -414,58 +445,186 @@
 
 <!-- Page passes the container for the graph to the program -->
 <body onload="main(document.getElementById('graphContainer'),document.getElementById('toolbarContainer'))" id="bodyContainer">
-	<!--此处构建一个容器，用于装工具栏-->
-	<div id="toolbarContainer"
-		style="overflow: hidden;width:100px;height:800px;float:left;border:1px solid black;margin-right:5px; ">
-		<ul>
-			<li person1="张三" person2="李四" person3="赵五">任务1</li>
-			<li person1="张六" person2="李七" person3="赵八">任务2</li>
-		</ul>
-		<div class="layui-side-scroll">
-			<!-- 左侧导航区域（可配合layui已有的垂直导航） -->
-			<ul class="layui-nav layui-nav-tree"  lay-filter="test">
-			  <li class="layui-nav-item layui-nav-itemed">
-				<a class="" href="javascript:;">所有商品</a>
-				<dl class="layui-nav-child">
-				  <dd><a href="javascript:;">列表一</a></dd>
-				  <dd><a href="javascript:;">列表二</a></dd>
-				  <dd><a href="javascript:;">列表三</a></dd>
-				  <dd><a href="">超链接</a></dd>
-				</dl>
-			  </li>
-			  <li class="layui-nav-item">
-				<a href="javascript:;">解决方案</a>
-				<dl class="layui-nav-child">
-				  <dd><a href="javascript:;">列表一</a></dd>
-				  <dd><a href="javascript:;">列表二</a></dd>
-				  <dd><a href="">超链接</a></dd>
-				</dl>
-			  </li>
-			  <li class="layui-nav-item"><a href="">云市场</a></li>
-			  <li class="layui-nav-item"><a href="">发布商品</a></li>
-			</ul>
+	<div id="mainId">
+		<!--此处构建一个容器，用于装工具栏-->
+		<div id="toolbarContainer"
+			style="overflow: hidden;width:100px;height:800px;float:left;border:1px solid black;margin-right:5px; ">
+			<!-- <ul>
+				<li person1="张三" person2="李四" person3="赵五">任务1</li>
+				<li person1="张六" person2="李七" person3="赵八">任务2</li>
+			</ul> -->
+			<div class="layui-side-scroll" style="position:relative;">
+				<!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+				<div class="layui-nav layui-nav-tree"  lay-filter="test">
+					<div class="layui-nav-item layui-nav-itemed">
+						<a class="" href="javascript:;" style="font-size:20px;">流程</a>
+						<ul class="layui-nav-child">
+							<li v-for="(item,index) in basicData.flow" :key="index">
+								<a href="javascript:;" 
+									:id=item.function.id 
+									:check=item.function.check 
+									:head=item.function.head 
+									:record=item.function.record 
+									:content=item.function.content 
+									:breakable=item.function.breakable 
+									:fastjump=item.function.fastjump 
+									:ansDelay=item.function.ansDelay 
+									:waitTime=item.function.waitTime 
+									:space=item.function.waitTime 
+									:fuc=item.function.fuc 
+									>{{item.title}}</a>
+							</li>
+						</ul>
+					</div >
+					<div  class="layui-nav-item">
+						<a href="javascript:;" style="font-size:20px;">问题</a>
+						<ul class="layui-nav-child">
+							<li v-for="(item,index) in basicData.questions" :key="index">
+								<a href="javascript:;" 
+									:id=item.function.id 
+									:check=item.function.check 
+									:head=item.function.head 
+									:record=item.function.record 
+									:content=item.function.content 
+									:breakable=item.function.breakable 
+									:fastjump=item.function.fastjump 
+									:ansDelay=item.function.ansDelay 
+									:waitTime=item.function.waitTime 
+									:space=item.function.waitTime 
+									:fuc=item.function.fuc 
+									>{{item.title}}</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div class="layui-nav layui-nav-tree"  lay-filter="test" style="position:absolute;left:0;bottom:80px;">
+					<div class="layui-nav-item layui-nav-itemed">
+						<a class="" href="javascript:;" style="font-size:20px;">功能</a>
+						<ul class="layui-nav-child">
+							<li>
+								<a href="javascript:;">挂机</a>
+							</li>
+							<li>
+								<a href="javascript:;">转人工</a>
+							</li>
+							<li>
+								<a href="javascript:;">空音</a>
+							</li>
+						</ul>
+					</div >
+				</div>
+			</div>
 		</div>
+		<!--创建一个图形容器-->
+		<div id="graphContainer"
+			style="overflow:hidden;width:800px;height:800px;float:left;border:1px solid black;cursor:default;">
+		</div>
+		<!--属性面板-->
+		<div id="properties"
+			style="border:solid 1px black;padding:10px;float:left;">
+			请选择
+		</div>
+		<!--移动镜容器-->
+		<div id="outlineContainer"
+			style="z-index:1;position:absolute;overflow:hidden;top:0px;right:0px;width:160px;height:120px;background:transparent;border-style:solid;border-color:lightgray;">
+		</div>
+		<div id="coverBtn">
+			<button class="layui-btn layui-btn-primary" @click="clickFn">原始按钮</button>
+		</div>
+
 	</div>
-	<!--创建一个图形容器-->
-	<div id="graphContainer"
-		style="overflow:hidden;width:800px;height:800px;float:left;border:1px solid black;cursor:default;">
-	</div>
-	<!--属性面板-->
-	<div id="properties"
-		style="border:solid 1px black;padding:10px;float:left;">
-		请选择
-	</div>
-	<!--移动镜容器-->
-	<div id="outlineContainer"
-		style="z-index:1;position:absolute;overflow:hidden;top:0px;right:0px;width:160px;height:120px;background:transparent;border-style:solid;border-color:lightgray;">
-	</div>
+	
 	<script>
-//JavaScript代码区域
-layui.use('element', function(){
-  var element = layui.element;
-  
-});
-</script>
+		//JavaScript代码区域
+		layui.use('element', function(){
+			var element = layui.element;
+		});
+	</script>
+	<script>
+		new Vue({
+			el:'#mainId',
+			data:{
+				basicData://生成问题和流程
+					{
+						'statusCode':1,
+						'questions':[
+							{
+								'title':'question1',
+								'function':{
+									'id':'1',
+									'check':'hello',
+									'head':'描述',
+									'record':'2',
+									'content':'描述luyin',
+									'breakable':true,
+									'fastjump':false,
+									'ansDelay':200,
+									'waitTime':2000,
+									'space':0.1,
+									'fuc':1
+								}
+							},
+							{
+								'title':'question2',
+								'function':{
+									'id':'0',
+									'check':'hello',
+									'head':'描述',
+									'record':'2',
+									'content':'描述luyin',
+									'breakable':true,
+									'fastjump':false,
+									'ansDelay':200,
+									'waitTime':2000,
+									'space':0.1,
+									'fuc':2
+								}
+							}
+						],
+						'flow':[
+							{
+								'title':'flow1',
+								'function':{
+									'id':'2',
+									'check':'hello',
+									'head':'描述',
+									'record':'2',
+									'content':'描述luyin',
+									'breakable':true,
+									'fastjump':false,
+									'ansDelay':200,
+									'waitTime':2000,
+									'space':0.1,
+									'fuc':3
+								}
+							},
+							{
+								'title':'flow2',
+								'function':{
+									'id':'8',
+									'check':'hello',
+									'head':'描述',
+									'record':'2',
+									'content':'描述luyin',
+									'breakable':true,
+									'fastjump':false,
+									'ansDelay':200,
+									'waitTime':2000,
+									'space':0.1,
+									'fuc':1
+								}
+							}
+						]
+					}
+			},
+			methods:{
+				clickFn(){
+					console.log('click')
+				}
+			}
+		})
+	</script>
+
 
 </body>
 </html>
