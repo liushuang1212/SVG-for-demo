@@ -187,7 +187,7 @@
 		
 					tack[i] = doc.createElement('Tack');
 					// console.log(tack[i])
-					// tack[i].setAttribute('编号', i);
+					tack[i].setAttribute('编号', i);
 					tack[i].setAttribute('类别', person2);
 					tack[i].setAttribute('流程概括', person3);
 					tack[i].setAttribute('录音编号', person4);
@@ -207,6 +207,8 @@
 				{
 					console.log(cell)
 					if(graph.model.isVertex(cell)){
+						cell.setAttribute('编号', cell.id); 
+
 						//vertex上面显示什么
 						var person1 = cell.id;
 						var person2 = cell.getAttribute('类别', '');
