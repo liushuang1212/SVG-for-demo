@@ -173,7 +173,7 @@
 				var tack = new Array();
 
 				for(var i = 0;i < li.length;i++){
-					var person1=li[i].getAttribute('id');
+
 					var person2=li[i].getAttribute('check');
 					var person3=li[i].getAttribute('head');
 					var person4=li[i].getAttribute('record');
@@ -186,7 +186,8 @@
 					var person11=li[i].getAttribute('fuc');
 		
 					tack[i] = doc.createElement('Tack');
-					tack[i].setAttribute('编号', person1);
+					// console.log(tack[i])
+					// tack[i].setAttribute('编号', i);
 					tack[i].setAttribute('类别', person2);
 					tack[i].setAttribute('流程概括', person3);
 					tack[i].setAttribute('录音编号', person4);
@@ -204,9 +205,10 @@
 				//对应的cell需要在页面上呈现什么内容？
 				graph.convertValueToString = function(cell)
 				{
+					console.log(cell)
 					if(graph.model.isVertex(cell)){
 						//vertex上面显示什么
-						var person1 = cell.getAttribute('编号', '');
+						var person1 = cell.id;
 						var person2 = cell.getAttribute('类别', '');
 						var person3 = cell.getAttribute('流程概括', '');
 						var person4 = cell.getAttribute('录音编号', '');
@@ -219,10 +221,12 @@
 						var person11 = cell.getAttribute('功能', '');
 									
 						// return person1 + ', ' + person2+','+person3+', '+person4+', '+person5+', '+person6+', '+person7+', '+person8+', '+person9+', '+person10+', '+person11;
-						return person3; // 流程上显示的内容
+						return person1; // 流程上显示的内容
 						
 					}else{
 						//edge上面显示什么
+						console.log(graph.getModel().isEdge(cell))
+						
 						return "完成后";
 					}
 				};
@@ -237,7 +241,7 @@
 
 				//事件绑定   绑定一个改变事件....触发时机？
 				graph.getSelectionModel().addListener(mxEvent.CHANGE, function(sender,evt)
-				{
+				{	
 					var div = document.getElementById('properties');
 					div.innerHTML="";
 					var cell = graph.getSelectionCell();
@@ -279,9 +283,8 @@
 			mxUtils.br(div);
 
 			var form = new mxForm();
-
+			// cell.value.attributes['编号'] = cell.id;
 			var attrs = cell.value.attributes;
-				
 			for (var i = 0; i < attrs.length; i++)
 			{
 				createTextField(graph, form, cell, attrs[i]);
@@ -294,7 +297,9 @@
 		*定义函数createTextField   生成字段
 		*/
 		function createTextField(graph, form, cell, attribute)
-		{
+		
+		{	
+			// form.setAttribute('编号', cell.id);
 			var input = form.addText(attribute.nodeName + ':', attribute.nodeValue);
 
 			var applyHandler = function()
@@ -432,19 +437,17 @@
 			state.view.graph.container.appendChild(img);
 			this.images.push(img);
 		};
-		mxIconSet.prototype.destroy = function()
-	{
-		if (this.images != null)
-		{
-			for (var i = 0; i < this.images.length; i++)
+		mxIconSet.prototype.destroy = function(){
+			if (this.images != null)
 			{
-				var img = this.images[i];
-				img.parentNode.removeChild(img);
+				for (var i = 0; i < this.images.length; i++)
+				{
+					var img = this.images[i];
+					img.parentNode.removeChild(img);
+				}
 			}
-		}
-		
-		this.images = null;
-	};
+			this.images = null;
+		};
 	</script>
 </head>
 
@@ -536,8 +539,6 @@
 		<div id="outlineContainer"
 			style="z-index:1;position:absolute;overflow:hidden;top:0px;right:0px;width:160px;height:120px;background:transparent;border-style:solid;border-color:lightgray;">
 		</div>
-		
-
 	</div>
 	
 	<script>
@@ -557,7 +558,6 @@
 							{
 								'title':'question1',
 								'function':{
-									'id':'1',
 									'check':'hello',
 									'head':'描述',
 									'record':'2',
@@ -573,7 +573,6 @@
 							{
 								'title':'question2',
 								'function':{
-									'id':'0',
 									'check':'hello',
 									'head':'描述',
 									'record':'2',
@@ -591,7 +590,6 @@
 							{
 								'title':'flow1',
 								'function':{
-									'id':'2',
 									'check':'hello',
 									'head':'描述',
 									'record':'2',
@@ -607,7 +605,6 @@
 							{
 								'title':'flow2',
 								'function':{
-									'id':'8',
 									'check':'hello',
 									'head':'描述',
 									'record':'2',
@@ -628,7 +625,5 @@
 			}
 		})
 	</script>
-
-
 </body>
 </html>
