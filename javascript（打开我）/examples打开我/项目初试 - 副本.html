@@ -170,6 +170,8 @@
 					addToolbarItem(graph,toolbar,vertex,icon,li);
 				};
 
+				//给图形元素挂载属性
+
 				var tack = new Array();
 
 				for(var i = 0;i < li.length;i++){
@@ -213,9 +215,14 @@
 					addVertex('editors/images/rectangle.gif',100,40,'',li[i],tack[i]);
 				}
 
+				
+			
+				
+				
 				//对应的cell需要在页面上呈现什么内容？
 				graph.convertValueToString = function(cell)
 				{
+					
 					if( graph.model.isVertex(cell) ){
 						
 						//vertex上面显示什么
@@ -238,12 +245,20 @@
 						
 					}else{
 						//edge上面显示什么
-						console.log(graph.getModel().isEdge(cell))
+					
+						// console.log(graph.getModel().isEdge(cell))
 						
-						return "完成后";
+						
+						// 尝试给划线添加属性
+						cell.setAttribute('编号', cell.id)
+						if(cell.source&&cell.source.id)cell.setAttribute('源id',cell.source.id)
+						if(cell.target&&cell.target.id)cell.setAttribute('目标id',cell.target.id)
+						
+						var show = cell.id
+						return show;
+						// return "完成后";
 					}
 				};
-
 				//添加额外按钮，生成graph的xml
 				document.body.appendChild(mxUtils.button('View XML',function()
 				{
@@ -258,6 +273,7 @@
 					var div = document.getElementById('properties');
 					div.innerHTML="";
 					var cell = graph.getSelectionCell();
+					
 					if (cell == null){
 						// 什么都没选中
 						mxUtils.writeln(div, 'Nothing selected.');
@@ -266,7 +282,64 @@
 						selectionChanged(graph,div);
 					}else{
 						// 选中的是线
-						mxUtils.writeln(div,"edge");
+						// mxUtils.writeln(div,"edge");
+						
+						// 尝试给划线添加属性
+						var lineTack = doc.createElement('lineTack');
+						lineTack.setAttribute('源id','');
+						lineTack.setAttribute('目标id','');
+						lineTack.setAttribute('作用','');
+						lineTack.setAttribute('意图','');
+						// addVertex('editors/images/rectangle.gif',100,40,'',cell,lineTack);
+						console.log(cell)
+						var center = document.createElement('center');
+						
+						mxUtils.writeln(center, 'lineTack' + ' (' + cell.id + ')');
+						
+						div.appendChild(center);
+						
+						mxUtils.br(div);
+
+						var form = new mxForm();
+						
+						var nodeValue1,nodeValue2;
+						if( cell.source && cell.source.id ){
+							nodeValue1 = cell.source.id
+						}else{
+							nodeValue1 = ''
+						}
+						if( cell.target && cell.target.id ){
+							nodeValue2 = cell.target.id
+						}else{
+							nodeValue2 = ''
+						}
+						var attrs = [
+							{
+								nodeName:'编号',
+								nodeValue:cell.id
+							},
+							{
+								nodeName:'源id',
+								nodeValue:nodeValue1,
+							},
+							{
+								nodeName:'目标id',
+								nodeValue:nodeValue2,
+							},{
+								nodeName:'作用',
+								nodeValue:''
+							},{
+								nodeName:'意图',
+								nodeValue:''
+							}
+						];
+
+						for (var i = 0; i < attrs.length; i++)
+						{
+							createTextField(graph, form, cell, attrs[i]);
+						}
+						div.appendChild(form.getTable());
+						mxUtils.br(div);
 					}
 				});
 
@@ -288,6 +361,7 @@
 		*/
 		function selectionChanged(graph,div){
 			var center = document.createElement('center');
+			// console.log(cell)
 			
 			mxUtils.writeln(center, cell.value.nodeName + ' (' + cell.id + ')');
 			
@@ -296,10 +370,11 @@
 			mxUtils.br(div);
 
 			var form = new mxForm();
-			// cell.value.attributes['编号'] = cell.id;
+			
 			var attrs = cell.value.attributes;
 			for (var i = 0; i < attrs.length; i++)
 			{
+			
 				createTextField(graph, form, cell, attrs[i]);
 			}
 
@@ -312,7 +387,7 @@
 		function createTextField(graph, form, cell, attribute)
 		
 		{	
-			// form.setAttribute('编号', cell.id);
+			
 			var input = form.addText(attribute.nodeName + ':', attribute.nodeValue);
 
 			var applyHandler = function()
