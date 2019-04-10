@@ -183,33 +183,43 @@
 					var person8=li[i].getAttribute('ansDelay');
 					var person9=li[i].getAttribute('waitTime');
 					var person10=li[i].getAttribute('space');
-					var person11=li[i].getAttribute('fuc');
+					var person11=li[i].getAttribute('slot');
+					var person12=li[i].getAttribute('group');
 		
 					tack[i] = doc.createElement('Tack');
 					// console.log(tack[i])
 					tack[i].setAttribute('编号', i);
-					tack[i].setAttribute('类别', person2);
-					tack[i].setAttribute('流程概括', person3);
-					tack[i].setAttribute('录音编号', person4);
-					tack[i].setAttribute('录音文字', person5);
-					tack[i].setAttribute('可否被打断', person6);
-					tack[i].setAttribute('是否立即跳转', person7);
-					tack[i].setAttribute('回答延时', person8);
-					tack[i].setAttribute('等待时长', person9);
-					tack[i].setAttribute('空音', person10);
-					tack[i].setAttribute('功能', person11);
-
+					if(person2 != null) tack[i].setAttribute('类别', person2);
+					if(person3 != null) tack[i].setAttribute('流程概括', person3);
+					if(person4 != null) tack[i].setAttribute('录音编号', person4);
+					if(person5 != null) tack[i].setAttribute('录音文字', person5);
+					if(person6 != null) tack[i].setAttribute('可否被打断', person6);
+					if(person7 != null) tack[i].setAttribute('是否立即跳转', person7);
+					if(person8 != null) tack[i].setAttribute('回答延时', person8);
+					if(person9 != null) tack[i].setAttribute('等待时长', person9);
+					if(person10 != null) tack[i].setAttribute('空音', person10);
+					if(person11 != null) tack[i].setAttribute('槽点', person11);
+					if(person12 != null) tack[i].setAttribute('组', person12);
+					// tack[i].setAttribute('类别', person2);
+					// tack[i].setAttribute('流程概括', person3);
+					// tack[i].setAttribute('录音编号', person4);
+					// tack[i].setAttribute('录音文字', person5);
+					// tack[i].setAttribute('可否被打断', person6);
+					// tack[i].setAttribute('是否立即跳转', person7);
+					// tack[i].setAttribute('回答延时', person8);
+					// tack[i].setAttribute('等待时长', person9);
+					// tack[i].setAttribute('空音', person10);
+					
 					addVertex('editors/images/rectangle.gif',100,40,'',li[i],tack[i]);
 				}
 
 				//对应的cell需要在页面上呈现什么内容？
 				graph.convertValueToString = function(cell)
 				{
-					console.log(cell)
-					if(graph.model.isVertex(cell)){
-						cell.setAttribute('编号', cell.id); 
-
+					if( graph.model.isVertex(cell) ){
+						
 						//vertex上面显示什么
+						cell.setAttribute('编号', cell.id); 
 						var person1 = cell.id;
 						var person2 = cell.getAttribute('类别', '');
 						var person3 = cell.getAttribute('流程概括', '');
@@ -220,10 +230,11 @@
 						var person8 = cell.getAttribute('回答延时', '');
 						var person9 = cell.getAttribute('等待时长', '');
 						var person10 = cell.getAttribute('空音', '');
-						var person11 = cell.getAttribute('功能', '');
+						var person11 = cell.getAttribute('槽点', '');
+						var person12 = cell.getAttribute('组', '');
 									
 						// return person1 + ', ' + person2+','+person3+', '+person4+', '+person5+', '+person6+', '+person7+', '+person8+', '+person9+', '+person10+', '+person11;
-						return person1; // 流程上显示的内容
+						return person3; // 流程上显示的内容
 						
 					}else{
 						//edge上面显示什么
@@ -463,14 +474,14 @@
 				<li person1="张三" person2="李四" person3="赵五">任务1</li>
 				<li person1="张六" person2="李七" person3="赵八">任务2</li>
 			</ul> -->
-			<div class="layui-side-scroll" style="position:relative;">
+			<div class="layui-side-scroll">
 				<!-- 左侧导航区域（可配合layui已有的垂直导航） -->
-				<div class="layui-nav layui-nav-tree"  lay-filter="test">
+				<div class="layui-nav layui-nav-tree"  lay-filter="test" style="height:79.5%;overflow-y:auto;">
 					<div class="layui-nav-item layui-nav-itemed">
 						<a class="" href="javascript:;" style="font-size:20px;">流程</a>
 						<ul class="layui-nav-child">
 							<li 
-								v-for="(item,index) in basicData.flow" 
+								v-for="(item,index) in basicData.flows" 
 								:key="index"
 								:id=item.function.id 
 								:check=item.function.check 
@@ -482,7 +493,8 @@
 								:ansDelay=item.function.ansDelay 
 								:waitTime=item.function.waitTime 
 								:space=item.function.space 
-								:fuc=item.function.fuc
+								:slot=item.function.slot
+								:group=item.function.group
 								>
 							<a href="javascript:;">{{item.title}}</a>
 							</li>
@@ -504,13 +516,15 @@
 								:ansDelay=item.function.ansDelay 
 								:waitTime=item.function.waitTime 
 								:space=item.function.space 
-								:fuc=item.function.fuc >
+								:slot=item.function.slot 
+								:group=item.function.group 
+								>
 								<a href="javascript:;">{{item.title}}</a>
 							</li>
 						</ul>
 					</div>
 				</div>
-				<div class="layui-nav layui-nav-tree"  lay-filter="test" style="position:absolute;left:0;bottom:80px;">
+				<div class="layui-nav layui-nav-tree"  lay-filter="test">
 					<div class="layui-nav-item layui-nav-itemed">
 						<a class="" href="javascript:;" style="font-size:20px;">功能</a>
 						<ul class="layui-nav-child">
@@ -554,73 +568,1080 @@
 			el:'#mainId',
 			data:{
 				basicData://生成问题和流程
-					{
-						'statusCode':1,
-						'questions':[
-							{
-								'title':'question1',
-								'function':{
-									'check':'hello',
-									'head':'描述',
-									'record':'2',
-									'content':'描述luyin',
-									'breakable':true,
-									'fastjump':false,
-									'ansDelay':200,
-									'waitTime':2000,
-									'space':0.1,
-									'fuc':1
-								}
-							},
-							{
-								'title':'question2',
-								'function':{
-									'check':'hello',
-									'head':'描述',
-									'record':'2',
-									'content':'描述luyin',
-									'breakable':true,
-									'fastjump':false,
-									'ansDelay':200,
-									'waitTime':2000,
-									'space':0.1,
-									'fuc':2
-								}
+				{
+					"statusCode": "1",
+					"questions": [
+						{
+							'title':'自定义',
+							"function": {
+								"check": "",
+								"head": "",
+								"record": '',
+								"content": "",
+								"breakable": '',
+								"fastjump": '',
+								"ansDelay": '',
+								"waitTime": '',
+								"space": '',
+								"slot": "",
+								"group": ''
 							}
-						],
-						'flow':[
-							{
-								'title':'flow1',
-								'function':{
-									'check':'hello',
-									'head':'描述',
-									'record':'2',
-									'content':'描述luyin',
-									'breakable':true,
-									'fastjump':false,
-									'ansDelay':200,
-									'waitTime':2000,
-									'space':0.1,
-									'fuc':3
-								}
-							},
-							{
-								'title':'flow2',
-								'function':{
-									'check':'hello',
-									'head':'描述',
-									'record':'2',
-									'content':'描述luyin',
-									'breakable':true,
-									'fastjump':false,
-									'ansDelay':200,
-									'waitTime':2000,
-									'space':0.1,
-									'fuc':1
-								}
+						}
+						,{
+						"title": "question1",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 100,
+							"content": "是这样的，我们首期的手续费为10%-30%，具体看您的资质情况而定，后期保持良好的信用，这边是会降低手续费的",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question2",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 101,
+							"content": "我们是无限花借款平台的，后台收到了您的借款申请，现在只需要您完善资料即可下款。",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question3",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 102,
+							"content": "是这样的，前期咨询和办理是不收取任何费用的，只有办理成功后才会收取。至于费用多少也是需要根据您的具体情况而定，一般首期为10到30个点，具体看您的资质情况。",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question4",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 103,
+							"content": "是这样的，前期咨询和办理是不收取任何费用的，只有办理成功后才会收取。至于费用多少也是需要根据您的具体情况而定，一般首期为10到30个点，具体看您的资质情况。",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question5",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 104,
+							"content": "是这样的，前期咨询和办理是不收取任何费用的，只有办理成功后才会收取。至于费用多少也是需要根据您的具体情况而定，一般首期为10到30个点，具体看您的资质情况。",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question6",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 105,
+							"content": "我们首期借款周期为7天，到期后可以续期，可以还本",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question7",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 106,
+							"content": "这个也要视情况而定，有些资质不好的也是有机会借到款的",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question8",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 107,
+							"content": "我们10到30分钟审核，5分钟下款，请您耐心等待",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question9",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 108,
+							"content": "如果您资质可以的话，是可以下款的",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question10",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 109,
+							"content": "现在都很方便的，只需要您进入app注册及完善资料即可下款",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question11",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 110,
+							"content": "我们这边是个人应急借款",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question12",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 111,
+							"content": "我们这边是无抵押无担保的个人信用借款",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question13",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 112,
+							"content": "我们首期的周期为一周7天，到期可以续期可以还本，还款日当天中午12点之前处理本金的话可以提额",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question14",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 113,
+							"content": "我们是无限花app借款，无抵押无担保的信用借款",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question15",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 114,
+							"content": "您好，我这边是无限花app借款，无抵押无担保的信用借款",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question16",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 115,
+							"content": "这个我们主要还是看要您个人资质情况对吧",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question17",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 116,
+							"content": "这个您可以放心，我们不下款不收任何费用",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question18",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 117,
+							"content": "可能您在多个借款软件注册过吧，我们这边是不会泄露任何一个客户的任何信息。",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question19",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 118,
+							"content": "这个您可以进入到我们的app进行查看，里面有详细的说明",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question20",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 119,
+							"content": "您看这样子好不好，稍后让我们专业的客服给您回个电话！您怎么称呼？",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question21",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 120,
+							"content": "这个您可以放心，我们是正规公司，利益都是有保障的。",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question22",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 121,
+							"content": "可以的，这个跟其他银行贷款没有关联的。",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question23",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 122,
+							"content": "这边只需要您身份证、银行卡、支付宝及淘宝信息就可以了",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question24",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 123,
+							"content": "嗯,您说 ",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question25",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 124,
+							"content": "哦，好的  ",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question26",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 125,
+							"content": "好的，麻烦您尽快完善资料",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question27",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 126,
+							"content": "哦，不好意思，您请讲！",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question28",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 127,
+							"content": "好的，挂机后客服微信会以短信形式发送到您的手机上，注意查收",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question29",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 128,
+							"content": "我叫无限花，您可以叫我小花",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question30",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 129,
+							"content": "这样吧，我稍后给您发个短信，上面有我的微信号，您可以加我",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question31",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 130,
+							"content": "这边看到您在我们无限花借款平台有申请借款，但是没有完善资料，只要您完善资料即可下款",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question32",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 131,
+							"content": "我们打电话给您也是把借款的最新信息告诉您，您这边也可以了解一下的",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question33",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 132,
+							"content": "不好意思不好意思，我这边也是新来的，也不是很了解！，稍后我让专业资深的客户经理和您联系，您看可以吗？",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question34",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 133,
+							"content": "啊没有啊，主要也是因为我们这边放款真的是非常快的，手续非常简单，想给您做个推荐",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question35",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 134,
+							"content": "喂，能听到吗？",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question36",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 135,
+							"content": "您好，我这边是无限花借款平台的，您在我们平台申请的借款初审已经通过，完善资料借款下款",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question37",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 136,
+							"content": "我们这边是通过app还款的，只要进入我们的app，点击我的，选择快速还款就可以了，我们支持支付宝绑定信用卡还款",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question38",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 137,
+							"content": "要看您征信不好到什么程度，您可以完善资料尝试一下借款申请",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question39",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 138,
+							"content": "我们这边是不会跟任何亲友拨打贷前电话的",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question40",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 139,
+							"content": "我们这边首期是这个手续费，保持良好信用，这边是会给您降下来的",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question41",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 140,
+							"content": "不客气  ",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question42",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 141,
+							"content": "我们首期借款的周期为7天，后期保持良好信用，是会延长借款周期的，我们这边10-30分钟审核，5分钟下款",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question43",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 142,
+							"content": "只需要您的身份证，银行卡，支付宝及淘宝信息",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question44",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 143,
+							"content": "哦，不好意思，可能是信号不好，没听清吧；",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question45",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 144,
+							"content": "我们借款人的年龄区间为20至40周岁之间",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question46",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 145,
+							"content": "可以，只需要您登陆我们无限花app，点击我的，之后选择快速还款就可以了",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question47",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 146,
+							"content": "不好意思，暂时我们没有分期业务",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question48",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 147,
+							"content": "是这样的，有社保或者公积金的，只需要您填写信息，我们这边可以提高您的初始借款额度",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question49",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 148,
+							"content": "是这样的，我们这边借款是很方便的，只需要您完善一下个人资料即可下款",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question50",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 149,
+							"content": "您现在不需要没有关系，我个人建议您可以下载一下我们无限花app，完善一下资料，之后只需要提交申请即可下款",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question51",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 150,
+							"content": "我们这边跟您的银行贷款是不关联的，只需要您进入我们无限花app完善资料即可下款",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question52",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 151,
+							"content": "我们是不看您的个人资产的，如您有车辆或者及房产信息，可以提高您的初始额度",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question53",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 152,
+							"content": "好的，稍后我发短信给您",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question54",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 153,
+							"content": "是这样的，首期手续费我们是10%-30%，后期保持良好信用，我们这边是会给您提额，手续费也会降低",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question55",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 154,
+							"content": "我们是无限花借款平台的，是app软件，后台收到了您的借款申请，现在只需要您在app上面完善资料即可下款。",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question56",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 155,
+							"content": "您只需要在无限花app上面完善一下资料即可下款。",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question57",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 156,
+							"content": "您好，我公司有着严格的管理系统以及风控系统，严禁第三方以及本公司的员工泄露客户的资料，您可以放心。",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question58",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 157,
+							"content": "您好，您在平台上完善资料后，系统会根据您的数据匹配出额度，额度在一千五到两万。",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}, {
+						"title": "question59",
+						"function": {
+							"check": "2",
+							"head": "等待匹配",
+							"record": 158,
+							"content": "是这样的，我这个手机号码不是微信号吗，您这边挂机以后，会以短信的形式发送给您。",
+							"breakable": true,
+							"fastjump": null,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": null
+						}
+					}],
+					"flows": [
+						{
+							'title':'自定义',
+							"function": {
+								"check": "",
+								"head": "",
+								"record": '',
+								"content": "",
+								"breakable": '',
+								"fastjump": '',
+								"ansDelay": '',
+								"waitTime": '',
+								"space": '',
+								"slot": "",
+								"group": ''
 							}
-						]
-					}
+						},
+						{
+						"title": "flow1",
+						"function": {
+							"check": "0",
+							"head": "打招呼",
+							"record": "A1",
+							"content": "喂，您好！（两秒空音）",
+							"breakable": true,
+							"fastjump": false,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": "未定义"
+						}
+					}, {
+						"title": "flow2",
+						"function": {
+							"check": "0",
+							"head": "开场白",
+							"record": "A2",
+							"content": "我这边是无限花借款平台的，您在我们平台申请的借款初审已经通过，现在只需要您完善资料即可下款！",
+							"breakable": true,
+							"fastjump": false,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": "未定义"
+						}
+					}, {
+						"title": "flow3",
+						"function": {
+							"check": "1",
+							"head": "开场白挽回",
+							"record": "A3",
+							"content": "您可以稍微了解下吗，我们这边也都是和银行正规合作的，速度快，手续简，只需要您完善资料即可下款！",
+							"breakable": true,
+							"fastjump": false,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": "未定义"
+						}
+					}, {
+						"title": "flow4",
+						"function": {
+							"check": "0",
+							"head": "公司介绍",
+							"record": "A4",
+							"content": "是这样的，我们是跟银行合作的第三方机构，专门解决个人应急借款的问题，",
+							"breakable": true,
+							"fastjump": false,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": "未定义"
+						}
+					}, {
+						"title": "flow5",
+						"function": {
+							"check": "1",
+							"head": "公司介绍挽回",
+							"record": "A5",
+							"content": "那没关系的，挂机后会有我们的下载短信发送到您的手机上，您可下载了解一下！",
+							"breakable": true,
+							"fastjump": false,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": "未定义"
+						}
+					}, {
+						"title": "flow6",
+						"function": {
+							"check": "0",
+							"head": "情况1",
+							"record": "A6",
+							"content": "我们的初始额度为1500元至20000元，资料完善率越高，初始额度越高，请您尽快完善资料即可下款",
+							"breakable": true,
+							"fastjump": false,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": "未定义"
+						}
+					}, {
+						"title": "flow7",
+						"function": {
+							"check": "1",
+							"head": "情况1挽回",
+							"record": "A7",
+							"content": "没关系，等您需要的时候再联系，祝您生活愉快，再见。",
+							"breakable": true,
+							"fastjump": false,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": "未定义"
+						}
+					}, {
+						"title": "flow8",
+						"function": {
+							"check": "0",
+							"head": "情况2",
+							"record": "A8",
+							"content": "我们的借款周期为7天，到期可以续期，可以还本",
+							"breakable": true,
+							"fastjump": false,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": "未定义"
+						}
+					}, {
+						"title": "flow9",
+						"function": {
+							"check": "1",
+							"head": "情况2挽回",
+							"record": "A9",
+							"content": "没关系，等您需要的时候再联系，祝您生活愉快，再见。",
+							"breakable": true,
+							"fastjump": false,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": "未定义"
+						}
+					}, {
+						"title": "flow10",
+						"function": {
+							"check": "0",
+							"head": "结束语",
+							"record": "A10",
+							"content": "那其它有问题的话到时就由我们客服跟您说，客服微信号及链接挂机后将以短信的形式发送给您，祝您生活愉快，再见！",
+							"breakable": true,
+							"fastjump": false,
+							"ansDelay": 200,
+							"waitTime": 2000,
+							"space": null,
+							"slot": "无",
+							"group": "未定义"
+						}
+					}]
+				}
 			},
 			methods:{
 				
